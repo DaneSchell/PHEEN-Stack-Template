@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <%- include('partials/head') %>
+
+<body>
+
+  <%- include('partials/header') %>
+
+  <main>
+
+    <h1>Hello, <%= user %>!</h1>
+
+    <form action="/update-username" method="POST">
+      <input type="text" name="newUsername" placeholder="New Username" required>
+      <button type="submit">Update Username</button>
+    </form>
+    <br/>
+    <form action="/update-password" method="POST">
+        <input type="password" name="currentPassword" placeholder="Current Password" required>
+        <input type="password" name="newPassword" placeholder="New Password" required>
+        <button type="submit">Update Password</button>
+    </form>
+    <br/>
+    <form action="/logout" method="POST">
+        <button type="submit">Logout</button>
+    </form>
+    <br/>
+    <button onclick="confirmDelete()">Delete Account</button>
+
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script src="js/deleteAccount.js"></script>
+
+</body>
+</html>

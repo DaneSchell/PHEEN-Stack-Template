@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <%- include('partials/head') %>
+
+<body>
+
+  <%- include('partials/header') %>
+
+  <main>
+
+    <form action="/login" method="POST">
+      <input type="text" name="username" placeholder="Username" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script src="js/error.js"></script>
+
+</body>
+</html>
