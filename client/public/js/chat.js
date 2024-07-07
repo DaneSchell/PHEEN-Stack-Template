@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const username = document.getElementById('username').value;
+
     const socket = io();
     let oldestMessageId = null;
     let isLoadingOlderMessages = false;
@@ -6,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Function to load older messages from server
     function loadOlderMessages() {
         if (isLoadingOlderMessages) return;
-        console.log(`Loading older messages with oldestMessageId: ${oldestMessageId}`); // Debugging log
+        console.log(`Loading older messages with oldestMessageId: ${oldestMessageId}`);
 
         isLoadingOlderMessages = true;
         const url = oldestMessageId ? `/older-messages?oldestMessageId=${oldestMessageId}` : `/older-messages`;
@@ -32,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     messagesContainer.insertBefore(newMessage, messagesContainer.firstChild);
                 });
 
-                // Adjust the scroll position to maintain the current view position
                 messagesContainer.scrollTop = messagesContainer.scrollHeight - scrollHeightBeforeAddingMessages;
 
                 oldestMessageId = messages[messages.length - 1].id;
@@ -44,7 +45,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    // Initial load of messages
     socket.on('load messages', messages => {
         const messagesContainer = document.getElementById('messages');
         messages.forEach(msg => {
@@ -54,18 +54,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         oldestMessageId = messages.length > 0 ? messages[messages.length - 1].id : null;
-
-        // Adjust scroll position to bottom
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     });
 
-    socket.emit('user connected', '<%= user %>');
+    socket.emit('user connected', username);
 
     document.getElementById('chatForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const messageInput = document.getElementById('messageInput');
         const message = messageInput.value;
-        socket.emit('chat message', { username: '<%= user %>', message });
+        socket.emit('chat message', { username, message });
         messageInput.value = '';
     });
 
@@ -83,6 +81,5 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Trigger initial load of messages
     loadOlderMessages();
 });

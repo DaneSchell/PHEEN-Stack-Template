@@ -27,6 +27,7 @@
     <h1>Welcome to your Dashboard, <%= user %>!</h1>
 
     <h2>Chat</h2>
+    <input type="hidden" id="username" value="<%= user %>">
     <ul id="messages" class="chatbox" style="overflow-y: scroll; height: 300px; border-style:inset; width: 300px;">
         <!-- Existing messages will be loaded here -->
     </ul>
