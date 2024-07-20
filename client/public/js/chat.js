@@ -1,5 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
     const username = document.getElementById('username').value;
+    const socket = io('ws://localhost:9000');
+
+    let oldestMessageId = null;
+    let isLoadingOlderMessages = false;
 
     // Validate username
     if (!username || username.length < 3 || username.length > 20 || /[^a-zA-Z0-9_]/.test(username)) {
@@ -8,9 +12,36 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    const socket = io('ws://localhost:9000');
-    let oldestMessageId = null;
-    let isLoadingOlderMessages = false;
+    // Handle image upload form submission
+    const uploadForm = document.getElementById('uploadForm');
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(uploadForm);
+
+            fetch('/dashboard/upload-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Create an image message with a thumbnail
+                    const message = `Image uploaded: <a href="${data.fileUrl}" target="_blank"><img src="${data.fileUrl}" alt="Uploaded Image" style="max-width: 150px; cursor: pointer;" /></a>`;
+                    socket.emit('chat message', { username, message });
+                } else {
+                    console.error('Upload failed:', data.message);
+                }
+            })
+            .catch(error => console.error('Error uploading image:', error));
+        });
+    }
 
     // Function to load older messages from server
     function loadOlderMessages() {
@@ -37,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 messages.reverse().forEach(msg => {
                     const newMessage = document.createElement('li');
-                    newMessage.textContent = `${msg.username}: ${msg.message}`;
+                    newMessage.innerHTML = `${msg.username}: ${msg.message}`; // Use innerHTML to support HTML content
                     messagesContainer.insertBefore(newMessage, messagesContainer.firstChild);
                 });
 
@@ -52,26 +83,52 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    socket.on('load messages', messages => {
+    // Function to scroll to the bottom of the messages container
+    function scrollToBottom() {
         const messagesContainer = document.getElementById('messages');
-        messages.forEach(msg => {
-            const newMessage = document.createElement('li');
-            newMessage.textContent = `${msg.username}: ${msg.message}`;
-            messagesContainer.appendChild(newMessage);
-        });
-
-        oldestMessageId = messages.length > 0 ? messages[messages.length - 1].id : null;
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Handle new chat messages
+    socket.on('chat message', (msg) => {
+        const messagesContainer = document.getElementById('messages');
+        const newMessage = document.createElement('li');
+        newMessage.innerHTML = `${msg.username}: ${msg.message}`; // Use innerHTML to support HTML content
+        messagesContainer.appendChild(newMessage);
+
+        // If the message contains an image, add a load event to handle scrolling
+        const images = newMessage.getElementsByTagName('img');
+        let imagesToLoad = images.length;
+
+        if (imagesToLoad > 0) {
+            Array.from(images).forEach((img) => {
+                img.addEventListener('load', () => {
+                    imagesToLoad--;
+                    if (imagesToLoad === 0) {
+                        scrollToBottom();
+                    }
+                });
+
+                img.addEventListener('error', () => {
+                    imagesToLoad--;
+                    if (imagesToLoad === 0) {
+                        scrollToBottom();
+                    }
+                });
+            });
+        } else {
+            scrollToBottom();
+        }
     });
 
+    // Handle user connection
     socket.emit('user connected', username);
 
+    // Handle chat form submission
     document.getElementById('chatForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const messageInput = document.getElementById('messageInput');
         const message = messageInput.value.trim();
-
-        // console.log('Message length:', message.length);
 
         if (message.length === 0 || message.length > 500) { // Example constraints
             alert('Message cannot be empty or too long.');
@@ -82,19 +139,14 @@ document.addEventListener("DOMContentLoaded", () => {
         messageInput.value = '';
     });
 
-    socket.on('chat message', (msg) => {
-        const messagesContainer = document.getElementById('messages');
-        const newMessage = document.createElement('li');
-        newMessage.textContent = `${msg.username}: ${msg.message}`;
-        messagesContainer.appendChild(newMessage);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    });
-
+    // Load older messages when scrolling to the top
     document.getElementById('messages').addEventListener('scroll', () => {
-        if (document.getElementById('messages').scrollTop === 0) {
+        const messagesContainer = document.getElementById('messages');
+        if (messagesContainer.scrollTop === 0) {
             loadOlderMessages();
         }
     });
 
+    // Initial load of older messages
     loadOlderMessages();
 });

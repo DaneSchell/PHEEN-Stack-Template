@@ -28,9 +28,13 @@
 
     <h2>Chat</h2>
     <input type="hidden" id="username" value="<%= user %>">
-    <ul id="messages" class="chatbox" style="overflow-y: scroll; height: 300px; border-style:inset; width: 300px;">
+    <ul id="messages" class="chatbox" style="overflow-y: scroll; height: 300px; border-style: inset; width: 300px;">
         <!-- Existing messages will be loaded here -->
     </ul>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="image" accept="image/*" />
+      <button type="submit">Upload Image</button>
+    </form>
     <form id="chatForm">
         <input id="messageInput" autocomplete="off" />
         <button>Send</button>
@@ -45,4 +49,3 @@
 
 </body>
 </html>
-

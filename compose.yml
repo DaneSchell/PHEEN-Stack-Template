@@ -13,6 +13,8 @@ services:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: mydatabase
+    volumes:
+      - ./client/uploads:/app/client/public/uploads
 
     develop:
       watch:
@@ -21,6 +23,7 @@ services:
           target: /app
           ignore:
             - node_modules/
+            - client/uploads/
         - action: rebuild
           path: package.json
 

@@ -42,6 +42,7 @@ app.use(helmet({
 app.use(sessionConfig);
 app.use(rateLimiterMiddleware);
 app.use(express.static(path.join(__dirname, '../client/public')));
+app.use('/uploads', express.static(path.join(__dirname, '../client/public/uploads')));
 
 // Views
 app.set('views', path.join(__dirname, '../client/views'));
