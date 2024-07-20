@@ -9,6 +9,14 @@
 
   <main>
 
+    <% if (errors && errors.length > 0) { %>
+      <div class="errors">
+          <% errors.forEach(error => { %>
+              <p><%= error.msg %></p>
+          <% }); %>
+      </div>
+    <% } %>
+
     <form action="/register" method="POST">
         <input type="text" name="username" placeholder="Username" required>
         <input type="password" name="password" placeholder="Password" required>
@@ -18,8 +26,6 @@
   </main>
 
   <%- include('partials/footer') %>
-
-  <script src="js/error.js"></script>
 
 </body>
 </html>

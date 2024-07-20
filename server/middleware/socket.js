@@ -1,3 +1,4 @@
+const { body, validationResult } = require('express-validator');
 const { Server } = require('socket.io');
 const db = require('./db');
 
@@ -28,6 +29,13 @@ function setupSocketIO(server) {
     });
 
     socket.on('chat message', (msg) => {
+      // Validate message on the server side
+      if (typeof msg.username !== 'string' || typeof msg.message !== 'string' ||
+          msg.message.length === 0 || msg.message.length > 500) {
+        console.error('Invalid message:', msg);
+        return;
+      }
+
       io.emit('chat message', msg);
 
       // Save the message to the database

@@ -1,6 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
     const username = document.getElementById('username').value;
 
+    // Validate username
+    if (!username || username.length < 3 || username.length > 20 || /[^a-zA-Z0-9_]/.test(username)) {
+        console.error('Invalid username:', username);
+        alert('Invalid username.');
+        return;
+    }
+
     const socket = io('ws://localhost:9000');
     let oldestMessageId = null;
     let isLoadingOlderMessages = false;
@@ -62,7 +69,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('chatForm').addEventListener('submit', (e) => {
         e.preventDefault();
         const messageInput = document.getElementById('messageInput');
-        const message = messageInput.value;
+        const message = messageInput.value.trim();
+
+        // console.log('Message length:', message.length);
+
+        if (message.length === 0 || message.length > 500) { // Example constraints
+            alert('Message cannot be empty or too long.');
+            return;
+        }
+
         socket.emit('chat message', { username, message });
         messageInput.value = '';
     });

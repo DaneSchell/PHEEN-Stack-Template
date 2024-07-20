@@ -8,8 +8,15 @@
   <%- include('partials/header') %>
 
   <main>
-
     <h1>Hello, <%= user %>!</h1>
+
+    <% if (errors.length > 0) { %>
+      <ul>
+        <% errors.forEach(function(error) { %>
+          <li><%= error.msg %></li>
+        <% }) %>
+      </ul>
+    <% } %>
 
     <form action="/account/update-username" method="POST">
       <input type="text" name="newUsername" placeholder="New Username" required>
@@ -32,7 +39,7 @@
 
   <%- include('partials/footer') %>
 
-  <script src="js/deleteAccount.js"></script>
+  <script src="/js/deleteAccount.js"></script>
 
 </body>
 </html>

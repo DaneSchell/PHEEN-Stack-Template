@@ -9,6 +9,14 @@
 
   <main>
 
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+      <ul>
+        <% errors.forEach(function(error) { %>
+          <li><%= error.msg %></li>
+        <% }) %>
+      </ul>
+    <% } %>
+
     <form action="/login" method="POST">
       <input type="text" name="username" placeholder="Username" required>
       <input type="password" name="password" placeholder="Password" required>
@@ -18,8 +26,6 @@
   </main>
 
   <%- include('partials/footer') %>
-
-  <script src="js/error.js"></script>
 
 </body>
 </html>

@@ -35,9 +35,6 @@ Build the Docker image and containers and start them up by typing:
 Wait for confirmation that everything is running, you'll see:
 
 ```
-app-1   | SOCKETIO: Running on port 9999.
-app-1   | SERVER: Running on port 9000.
+app-1   | View the web app @ http://localhost:9000/
 app-1   | DATABASE: Running on port 5432.
 ```
-
-Visit http://localhost:9000/ and play around with the app.
