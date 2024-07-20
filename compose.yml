@@ -16,7 +16,7 @@ services:
 
     develop:
       watch:
-        - action: sync
+        - action: sync+restart
           path: ./
           target: /app
           ignore:

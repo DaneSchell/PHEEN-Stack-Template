@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const username = document.getElementById('username').value;
 
-    const socket = io();
+    const socket = io('ws://localhost:9000');
     let oldestMessageId = null;
     let isLoadingOlderMessages = false;
 
@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log(`Loading older messages with oldestMessageId: ${oldestMessageId}`);
 
         isLoadingOlderMessages = true;
-        const url = oldestMessageId ? `/older-messages?oldestMessageId=${oldestMessageId}` : `/older-messages`;
+        const url = oldestMessageId ? `/dashboard/older-messages?oldestMessageId=${oldestMessageId}` : `/dashboard/older-messages`;
         fetch(url)
             .then(response => response.json())
             .then(messages => {

@@ -11,22 +11,22 @@
 
     <h1>Hello, <%= user %>!</h1>
 
-    <form action="/update-username" method="POST">
+    <form action="/account/update-username" method="POST">
       <input type="text" name="newUsername" placeholder="New Username" required>
       <button type="submit">Update Username</button>
     </form>
     <br/>
-    <form action="/update-password" method="POST">
+    <form action="/account/update-password" method="POST">
         <input type="password" name="currentPassword" placeholder="Current Password" required>
         <input type="password" name="newPassword" placeholder="New Password" required>
         <button type="submit">Update Password</button>
     </form>
     <br/>
-    <form action="/logout" method="POST">
+    <form action="/account/logout" method="POST">
         <button type="submit">Logout</button>
     </form>
     <br/>
-    <button onclick="confirmDelete()">Delete Account</button>
+    <button id="deleteAccountButton">Delete Account</button>
 
   </main>
 
