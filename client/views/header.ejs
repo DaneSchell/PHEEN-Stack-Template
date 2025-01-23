@@ -1,0 +1,79 @@
+<header class="app-header">
+    <div class="header-left">
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span class="theme-icon">🌙</span>
+        </button>
+    </div>
+    <div class="header-center">
+        <a href="/" class="logo-link">
+            <h1>Trump Ticker</h1>
+        </a>
+    </div>
+    <div class="header-right">
+        <button id="menuToggle" class="menu-toggle">
+            <span class="hamburger">☰</span>
+        </button>
+        <nav id="navMenu" class="nav-menu">
+            <a href="/" class="auth-button action">Main</a>
+            <% if (typeof user !== 'undefined' && user) { %>
+                <a href="/dashboard" class="auth-button action">Dashboard</a>
+                <a href="/scraper" class="auth-button action">News Scraper</a>
+                <% if (user.role === 'admin') { %>
+                    <a href="/admin/analytics" class="auth-button action">Analytics</a>
+                    <a href="/admin/search-terms" class="auth-button action">Search Terms</a>
+                <% } %>
+                <a href="/account" class="auth-button action">Account</a>
+                <form action="/account/logout" method="POST" style="display: inline;">
+                    <button type="submit" class="auth-button danger">Logout</button>
+                </form>
+            <% } else { %>
+                <a href="/login" class="auth-button action">Login</a>
+                <a href="/register" class="auth-button action">Register</a>
+            <% } %>
+            <button class="auth-button danger nav-close">Close</button>
+        </nav>
+    </div>
+</header>
+
+<script>
+function toggleTheme() {
+    const html = document.documentElement;
+    const themeIcon = document.querySelector('.theme-icon');
+    
+    if (html.getAttribute('data-theme') === 'dark') {
+        html.removeAttribute('data-theme');
+        themeIcon.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+    } else {
+        html.setAttribute('data-theme', 'dark');
+        themeIcon.textContent = '☀️';
+        localStorage.setItem('theme', 'dark');
+    }
+}
+
+// Apply saved theme on load
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme');
+    const themeIcon = document.querySelector('.theme-icon');
+    
+    if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeIcon.textContent = '☀️';
+    }
+
+    // Menu toggle functionality
+    const menuToggle = document.getElementById('menuToggle');
+    const navMenu = document.getElementById('navMenu');
+    const navClose = document.querySelector('.nav-close');
+
+    menuToggle.addEventListener('click', () => {
+        navMenu.classList.add('show');
+        menuToggle.style.display = 'none';
+    });
+
+    navClose.addEventListener('click', () => {
+        navMenu.classList.remove('show');
+        menuToggle.style.display = 'block';
+    });
+});
+</script>

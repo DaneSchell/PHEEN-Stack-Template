@@ -1,0 +1,34 @@
+<footer class="app-footer">
+    <div class="footer-content">
+        <div class="footer-left">
+            <% if (page === 'dashboard') { %>
+                <button class="auth-button danger" onclick="clearChat()">Clear Chat</button>
+            <% } %>
+        </div>
+        <div class="footer-center">
+            <% if (page === 'auth') { %>
+                <% if (authMode === 'login') { %>
+                    <button onclick="document.getElementById('loginForm').submit()" class="auth-button success">Login</button>
+                    <a href="/register" class="auth-button action">Register</a>
+                <% } else { %>
+                    <button onclick="document.getElementById('registerForm').submit()" class="auth-button success">Register</button>
+                    <a href="/login" class="auth-button action">Login</a>
+                <% } %>
+            <% } else if (page === 'dashboard') { %>
+                <button class="auth-button action" onclick="refreshFeed()">Refresh Feed</button>
+                <button class="auth-button success" onclick="toggleAutoRefresh()">Auto Refresh</button>
+            <% } else if (page === 'account') { %>
+                <button class="auth-button danger" onclick="confirmDelete()">Delete Account</button>
+            <% } %>
+        </div>
+        <div class="footer-right">
+            <% if (page === 'dashboard') { %>
+                <button class="auth-button action" onclick="clearFilters()">Clear Filters</button>
+            <% } else if (typeof user !== 'undefined' && page !== 'auth') { %>
+                <form action="/account/logout" method="POST" class="logout-form">
+                    <button type="submit" class="auth-button danger">Logout</button>
+                </form>
+            <% } %>
+        </div>
+    </div>
+</footer>

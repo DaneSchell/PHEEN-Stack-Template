@@ -1,0 +1,39 @@
+<div class="auth-container">
+    <% if (errors && errors.length > 0) { %>
+        <div class="errors">
+            <% errors.forEach(function(error) { %>
+                <p><%= error.msg %></p>
+            <% }) %>
+        </div>
+    <% } %>
+
+    <% if (typeof authMode === 'undefined' || authMode === 'login') { %>
+        <form id="loginForm" action="/login" method="POST" class="auth-form">
+            <h2>Login</h2>
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+        </form>
+    <% } else if (authMode === 'register') { %>
+        <form id="registerForm" action="/register" method="POST" class="auth-form">
+            <h2>Register</h2>
+            <div class="form-group">
+                <input type="text" name="username" placeholder="Username" required>
+            </div>
+            <div class="form-group">
+                <input type="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="password" placeholder="Password" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+            </div>
+        </form>
+    <% } %>
+</div>
+
+<link rel="stylesheet" href="/views/partials/css/auth.css"> 

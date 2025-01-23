@@ -1,0 +1,199 @@
+<div class="scraper-container">
+    <h1>News Scraper Status</h1>
+
+    <div class="status-section">
+        <h2>Live Updates</h2>
+        <div id="scraper-updates" class="updates-container">
+            <!-- Updates will be inserted here by JavaScript -->
+        </div>
+    </div>
+
+    <div class="recent-articles">
+        <h2>Recently Scraped Articles</h2>
+        <div id="recent-articles-list">
+            <% scrapingResults.forEach(result => { %>
+                <div class="article-card">
+                    <h3><%= result.title %></h3>
+                    <p class="source"><%= result.source %> - <%= new Date(result.published_at).toLocaleString() %></p>
+                    <a href="<%= result.url %>" target="_blank" class="article-link">Read Article</a>
+                    
+                    <div class="analysis-section">
+                        <h4>Analysis</h4>
+                        <% const analysis = typeof result.analysis === 'string' ? JSON.parse(result.analysis) : result.analysis %>
+                        
+                        <% if (analysis.companies && analysis.companies.length > 0) { %>
+                            <div class="entity-group">
+                                <h5>Companies Mentioned:</h5>
+                                <ul>
+                                    <% analysis.companies.forEach(company => { %>
+                                        <li><%= company %></li>
+                                    <% }) %>
+                                </ul>
+                            </div>
+                        <% } %>
+
+                        <% if (analysis.people && analysis.people.length > 0) { %>
+                            <div class="entity-group">
+                                <h5>People Mentioned:</h5>
+                                <ul>
+                                    <% analysis.people.forEach(person => { %>
+                                        <li><%= person %></li>
+                                    <% }) %>
+                                </ul>
+                            </div>
+                        <% } %>
+
+                        <% if (analysis.investments && analysis.investments.length > 0) { %>
+                            <div class="entity-group">
+                                <h5>Investment References:</h5>
+                                <ul>
+                                    <% analysis.investments.forEach(investment => { %>
+                                        <li><%= investment %></li>
+                                    <% }) %>
+                                </ul>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+    const updatesContainer = document.getElementById('scraper-updates');
+    const recentArticlesList = document.getElementById('recent-articles-list');
+
+    function addUpdate(update) {
+        const updateElement = document.createElement('div');
+        updateElement.className = 'update-item';
+        updateElement.innerHTML = `
+            <span class="timestamp">${new Date(update.timestamp).toLocaleTimeString()}</span>
+            <span class="message">${update.message}</span>
+            ${update.data ? `<pre class="data">${JSON.stringify(update.data, null, 2)}</pre>` : ''}
+        `;
+        updatesContainer.insertBefore(updateElement, updatesContainer.firstChild);
+
+        // Keep only the last 50 updates
+        if (updatesContainer.children.length > 50) {
+            updatesContainer.removeChild(updatesContainer.lastChild);
+        }
+    }
+
+    socket.on('scraping_update', (update) => {
+        addUpdate(update);
+    });
+</script>
+
+<style>
+.scraper-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.status-section {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.updates-container {
+    max-height: 300px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.update-item {
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-family: monospace;
+}
+
+.update-item:last-child {
+    border-bottom: none;
+}
+
+.update-item .timestamp {
+    color: #666;
+    margin-right: 10px;
+}
+
+.update-item .data {
+    margin-top: 5px;
+    padding: 5px;
+    background: #f1f1f1;
+    border-radius: 4px;
+    font-size: 0.9em;
+    overflow-x: auto;
+}
+
+.recent-articles {
+    margin-top: 30px;
+}
+
+.article-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.article-card h3 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+}
+
+.source {
+    color: #666;
+    font-size: 0.9em;
+    margin-bottom: 10px;
+}
+
+.article-link {
+    display: inline-block;
+    padding: 5px 10px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.analysis-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.entity-group {
+    margin-bottom: 15px;
+}
+
+.entity-group h5 {
+    color: #666;
+    margin: 0 0 5px 0;
+}
+
+.entity-group ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.entity-group li {
+    display: inline-block;
+    background: #e9ecef;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin: 2px;
+    font-size: 0.9em;
+}
+</style> 

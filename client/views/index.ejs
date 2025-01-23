@@ -1,62 +1,26 @@
 <!DOCTYPE html>
-<html lang=en>
-
-  <%- include('partials/head') %>
-
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trump Ticker</title>
+    <link rel="stylesheet" href="/views/index.css">
+    <link rel="stylesheet" href="/views/header.css">
+    <link rel="stylesheet" href="/views/footer.css">
+    <!-- Additional page-specific styles will be included in content pages -->
+</head>
 <body>
+    <div class="app-container">
+        <!-- Sticky Header -->
+        <%- include('header') %>
 
-  <%- include('partials/header') %>
+        <!-- Main Content Area -->
+        <main class="app-content">
+            <%- include('partials/' + page) %>
+        </main>
 
-  <main>
-
-    <p>This NodeJS app uses Docker and PostgreSQL with the following packages:</p>
-
-    <ul>
-
-      <li>bcryptjs</li>
-      <li>body-parser</li>
-      <li>cookie-parser</li>
-      <li>cors</li>
-      <li>dotenv</li>
-      <li>ejs</li>
-      <li>express</li>
-      <li>express-session</li>
-      <li>express-validator</li>
-      <li>helmet</li>
-      <li>htmx</li>
-      <li>jsonwebtoken</li>
-      <li>multer</li>
-      <li>pg</li>
-      <li>pg-promise</li>
-      <li>rate-limiter-flexible</li>
-      <li>socket.io</li>
-      <li>winston</li>
-
-    </ul>
-
-    <p>It has the following functionality:</p>
-
-    <ul>
-
-      <li>Database CRUD</li>
-      <li>Validate of Inputs</li>
-      <li>Security Protection via HTTP Headers</li>
-      <li>Rate Limiting</li>
-      <li>Cross-Origin Resource Sharing</li>
-      <li>Environment Variables</li>
-      <li>Server-Side Rendering</li>
-      <li>Client-Side AJAX -> To be configured.</li>
-      <li>Authentication</li>
-      <li>Sessions</li>
-      <li>Real-Time Chat</li>
-      <li>File Uploads -> To be configured.</li>
-      <li>Logging -> To be configured.</li>
-      
-    </ul>
-
-  </main>
-
-  <%- include('partials/footer') %>
-
+        <!-- Sticky Footer -->
+        <%- include('footer') %>
+    </div>
 </body>
 </html>

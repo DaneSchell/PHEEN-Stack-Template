@@ -1,0 +1,99 @@
+<div class="dashboard-container">
+    <% if (typeof errors !== 'undefined' && errors.length > 0) { %>
+        <div class="errors">
+            <% errors.forEach(function(error) { %>
+                <p><%= error.msg %></p>
+            <% }) %>
+        </div>
+    <% } %>
+
+    <% if (userRole === 'admin') { %>
+        <div class="admin-section">
+            <h2>User Management</h2>
+            <div class="user-list">
+                <% users.forEach(function(user) { %>
+                    <div class="user-item">
+                        <span class="username"><%= user.username %></span>
+                        <span class="email"><%= user.email %></span>
+                        <span class="role"><%= user.role %></span>
+                        <div class="user-actions">
+                            <form id="deleteUser<%= user.id %>" action="/admin/users/<%= user.username %>/delete" method="POST" class="inline-form">
+                                <button type="submit" class="auth-button danger">Delete</button>
+                            </form>
+                            <button onclick="showEditUser('<%= user.username %>')" class="auth-button action">Edit</button>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        </div>
+    <% } %>
+
+    <div class="chat-section">
+        <h2>Chat</h2>
+        <input type="hidden" id="username" value="<%= user.username %>">
+        <div class="chat-container">
+            <div class="chatbox">
+                <ul id="chatbox"></ul>
+            </div>
+            
+            <div class="chat-controls">
+                <form id="uploadForm" class="upload-form">
+                    <input type="file" name="image" accept="image/*" class="file-input" />
+                    <button type="submit" class="auth-button action">Upload Image</button>
+                </form>
+                
+                <form id="chatForm" class="message-form">
+                    <input type="text" id="messageInput" placeholder="Type your message..." required>
+                    <button type="submit" class="auth-button action">Send</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="loadMoreContainer" class="load-more">
+            <button id="loadMoreButton" class="auth-button action">Load More Messages</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal (hidden by default) -->
+<div id="editUserModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h3>Edit User</h3>
+        <form id="editUserForm" action="/admin/users/update" method="POST">
+            <input type="hidden" id="editUsername" name="username">
+            <div class="form-group">
+                <label for="editEmail">Email:</label>
+                <input type="email" id="editEmail" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="editRole">Role:</label>
+                <select id="editRole" name="role" required>
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="submit" class="auth-button action">Save</button>
+                <button type="button" onclick="hideEditUser()" class="auth-button danger">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/chat.js"></script>
+<link rel="stylesheet" href="/views/partials/css/dashboard.css">
+
+<script>
+function showEditUser(username) {
+    const modal = document.getElementById('editUserModal');
+    const usernameInput = document.getElementById('editUsername');
+    usernameInput.value = username;
+    modal.style.display = 'block';
+}
+
+function hideEditUser() {
+    const modal = document.getElementById('editUserModal');
+    modal.style.display = 'none';
+}
+</script> 

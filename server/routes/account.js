@@ -5,16 +5,27 @@ const jwt = require('jsonwebtoken');
 const { isAuthenticated } = require('../middleware/auth');
 const db = require('../middleware/db');
 const { validationResult } = require('express-validator');
-const { updateUsernameValidationRules, updatePasswordValidationRules } = require('../middleware/validation');
+const { updateUsernameValidationRules, updatePasswordValidationRules, updateEmailValidationRules } = require('../middleware/validation');
+
+// Helper function to check if user is admin
+async function isAdmin(username) {
+    const user = await db.oneOrNone('SELECT role FROM users WHERE username = $1', username);
+    return user && user.role === 'admin';
+}
 
 // Account Page Route
-router.get('/', (req, res) => {
+router.get('/', isAuthenticated, async (req, res) => {
     if (req.session.token) {
-        jwt.verify(req.session.token, process.env.JWT_SECRET, (err, decoded) => {
+        jwt.verify(req.session.token, process.env.JWT_SECRET, async (err, decoded) => {
             if (err) {
                 res.redirect('/login');
             } else {
-                res.render('account', { user: decoded.username, errors: [] });
+                const user = await db.oneOrNone('SELECT username, role, email FROM users WHERE username = $1', decoded.username);
+                res.render('index', { 
+                    user: user, 
+                    page: 'account',
+                    errors: [] 
+                });
             }
         });
     } else {
@@ -22,12 +33,23 @@ router.get('/', (req, res) => {
     }
 });
 
-// Update Username Route with Validation
+// Update Username Route with Validation (Admin only)
 router.post('/update-username', isAuthenticated, updateUsernameValidationRules(), async (req, res) => {
-    const errors = validationResult(req);
+    if (!await isAdmin(req.user)) {
+        return res.render('index', { 
+            user: { username: req.user }, 
+            page: 'account',
+            errors: [{ msg: 'Unauthorized: Admin access required' }] 
+        });
+    }
 
+    const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.render('account', { user: req.user, errors: errors.array() });
+        return res.render('index', { 
+            user: { username: req.user }, 
+            page: 'account',
+            errors: errors.array() 
+        });
     }
 
     const { newUsername } = req.body;
@@ -39,16 +61,49 @@ router.post('/update-username', isAuthenticated, updateUsernameValidationRules()
         res.redirect('/account');
     } catch (error) {
         console.error('Error updating username:', error);
-        res.send('Failed to update username');
+        res.render('index', { 
+            user: { username: req.user }, 
+            page: 'account',
+            errors: [{ msg: 'Failed to update username' }] 
+        });
+    }
+});
+
+// Update Email Route with Validation
+router.post('/update-email', isAuthenticated, updateEmailValidationRules(), async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.render('index', { 
+            user: { username: req.user }, 
+            page: 'account',
+            errors: errors.array() 
+        });
+    }
+
+    const { newEmail } = req.body;
+
+    try {
+        await db.none('UPDATE users SET email = $1 WHERE username = $2', [newEmail, req.user]);
+        res.redirect('/account');
+    } catch (error) {
+        console.error('Error updating email:', error);
+        res.render('index', { 
+            user: { username: req.user }, 
+            page: 'account',
+            errors: [{ msg: 'Failed to update email' }] 
+        });
     }
 });
 
 // Update Password Route with Validation
 router.post('/update-password', isAuthenticated, updatePasswordValidationRules(), async (req, res) => {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
-        return res.render('account', { user: req.user, errors: errors.array() });
+        return res.render('index', { 
+            user: { username: req.user }, 
+            page: 'account',
+            errors: errors.array() 
+        });
     }
 
     const { currentPassword, newPassword } = req.body;
@@ -61,43 +116,62 @@ router.post('/update-password', isAuthenticated, updatePasswordValidationRules()
             await db.none('UPDATE users SET password = $1 WHERE username = $2', [hashedNewPassword, req.user]);
             res.redirect('/account');
         } else {
-            res.send('Current password is incorrect');
+            res.render('index', { 
+                user: { username: req.user }, 
+                page: 'account',
+                errors: [{ msg: 'Current password is incorrect' }] 
+            });
         }
     } catch (error) {
         console.error('Error updating password:', error);
-        res.send('Failed to update password');
+        res.render('index', { 
+            user: { username: req.user }, 
+            page: 'account',
+            errors: [{ msg: 'Failed to update password' }] 
+        });
+    }
+});
+
+// Delete Account Route (Admin only)
+router.post('/delete-account', isAuthenticated, async (req, res) => {
+    if (!await isAdmin(req.user)) {
+        return res.render('index', { 
+            user: { username: req.user }, 
+            page: 'account',
+            errors: [{ msg: 'Unauthorized: Admin access required' }] 
+        });
+    }
+
+    const usernameFromSession = req.user;
+
+    try {
+        await db.none('DELETE FROM users WHERE username = $1', usernameFromSession);
+        req.session.destroy(() => {
+            res.redirect('/login');
+        });
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        res.render('index', { 
+            user: { username: req.user }, 
+            page: 'account',
+            errors: [{ msg: 'Failed to delete account' }] 
+        });
     }
 });
 
 // Logout Route
 router.post('/logout', isAuthenticated, (req, res) => {
-  const username = req.user; // Assuming `req.user` is set correctly
-  req.session.destroy(err => {
-    if (err) {
-      console.error('Error during logout:', err);
-      return res.status(500).send('Logout failed');
-    }
-    if (global.io) { // Ensure `io` is available
-      global.io.emit('user disconnected', username);
-    }
-    res.redirect('/');
-  });
+    const username = req.user;
+    req.session.destroy(err => {
+        if (err) {
+            console.error('Error during logout:', err);
+            return res.status(500).send('Logout failed');
+        }
+        if (global.io) {
+            global.io.emit('user disconnected', username);
+        }
+        res.redirect('/');
+    });
 });
-
-router.post('/delete-account', isAuthenticated, async (req, res) => {
-  const usernameFromSession = req.user; // The username from the session
-
-  try {
-      await db.none('DELETE FROM users WHERE username = $1', usernameFromSession);
-      req.session.destroy(() => {
-          res.redirect('/login');
-      });
-  } catch (error) {
-      console.error('Error deleting account:', error);
-      res.status(500).send('Failed to delete account'); // Changed to 500 for server-side error
-  }
-});
-
-
 
 module.exports = router;

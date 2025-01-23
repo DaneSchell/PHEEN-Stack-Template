@@ -30,6 +30,15 @@ const updatePasswordValidationRules = () => [
         .escape(),
 ];
 
+// Validation rules for updating email
+const updateEmailValidationRules = () => [
+    body('newEmail')
+        .trim()
+        .isEmail().withMessage('Please enter a valid email address')
+        .normalizeEmail()
+        .escape(),
+];
+
 // Validation rules for login
 const loginValidationRules = () => [
     body('username')
@@ -46,5 +55,6 @@ module.exports = {
     registrationValidationRules,
     updateUsernameValidationRules,
     updatePasswordValidationRules,
-    loginValidationRules // Export the new login validation rules
+    updateEmailValidationRules,
+    loginValidationRules
 };

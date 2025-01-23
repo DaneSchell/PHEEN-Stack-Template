@@ -5,7 +5,7 @@ const db = require('./db');
 function setupSocketIO(server) {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:9000", // Adjust as needed
+      origin: process.env.NODE_ENV === 'production' ? false : "http://localhost:9000",
       methods: ["GET", "POST"]
     }
   });
@@ -15,9 +15,9 @@ function setupSocketIO(server) {
     console.log('a user connected');
 
     // Emit a limited number of previous messages to the newly connected user
-    db.many('SELECT username, message FROM messages ORDER BY timestamp DESC LIMIT 50') // Adjust the LIMIT based on your preference
+    db.many('SELECT id, username, message FROM messages ORDER BY timestamp DESC LIMIT 50')
       .then(messages => {
-        socket.emit('previous messages', messages.reverse()); // Reverse to show oldest messages first
+        socket.emit('previous messages', messages.reverse());
       })
       .catch(error => {
         console.error('Error fetching previous messages:', error);
@@ -28,7 +28,7 @@ function setupSocketIO(server) {
       io.emit('user connected', username);
     });
 
-    socket.on('chat message', (msg) => {
+    socket.on('chat message', async (msg) => {
       // Validate message on the server side
       if (typeof msg.username !== 'string' || typeof msg.message !== 'string' ||
           msg.message.length === 0 || msg.message.length > 500) {
@@ -36,21 +36,28 @@ function setupSocketIO(server) {
         return;
       }
 
-      io.emit('chat message', msg);
+      try {
+        // Save the message to the database and get the ID
+        const result = await db.one(
+          'INSERT INTO messages(username, message) VALUES($1, $2) RETURNING id',
+          [msg.username, msg.message]
+        );
 
-      // Save the message to the database
-      db.none('INSERT INTO messages(username, message) VALUES($1, $2)', [msg.username, msg.message])
-        .catch(error => {
-          console.error('Error saving message:', error);
+        // Emit the message with its ID
+        io.emit('chat message', {
+          id: result.id,
+          username: msg.username,
+          message: msg.message
         });
+      } catch (error) {
+        console.error('Error saving message:', error);
+      }
     });
 
     socket.on('disconnect', () => {
       if (socket.username) {
-        console.log(`${socket.username} disconnected`); // Log the username disconnecting
-        socket.broadcast.emit('user disconnected', socket.username);
-      } else {
-        console.log('user disconnected'); // Fallback log if username is not set
+        console.log(`${socket.username} disconnected`);
+        io.emit('user disconnected', socket.username);
       }
     });
   });

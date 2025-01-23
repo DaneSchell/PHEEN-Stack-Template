@@ -1,0 +1,32 @@
+<div class="main-container">
+    <div class="hero-section">
+        <h1>Welcome to Trump Ticker</h1>
+        <p>Stay updated with real-time discussions and updates</p>
+    </div>
+
+    <div class="features-section">
+        <div class="feature-card">
+            <h3>Real-time Chat</h3>
+            <p>Join the conversation with other users in real-time</p>
+        </div>
+        <div class="feature-card">
+            <h3>Image Sharing</h3>
+            <p>Share images and media with the community</p>
+        </div>
+        <div class="feature-card">
+            <h3>User Profiles</h3>
+            <p>Create and customize your profile</p>
+        </div>
+    </div>
+
+    <div class="cta-section">
+        <% if (typeof user === 'undefined') { %>
+            <a href="/register" class="cta-button">Get Started</a>
+            <a href="/login" class="cta-button secondary">Login</a>
+        <% } else { %>
+            <a href="/dashboard" class="cta-button">Go to Dashboard</a>
+        <% } %>
+    </div>
+</div>
+
+<link rel="stylesheet" href="/views/partials/css/main.css"> 
